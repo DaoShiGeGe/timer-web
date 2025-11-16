@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高级在线计时器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            accent: '#FF7D00',
+            exam: '#722ED1',
+            dark: '#1D2129',
+            light: '#F2F3F5',
+            danger: '#F53F3F'
+          },
+          fontFamily: {
+            digital: ['SimHei', '黑体', 'monospace'], // 黑体
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .btn-hover {
+        @apply transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0;
+      }
+      .ms-display {
+        @apply text-[clamp(1rem,3vw,1.5rem)] text-gray-500 ml-2 align-text-top font-digital min-w-[30px] text-right;
+      }
+      .time-display-container {
+        @apply font-bold text-[clamp(2.5rem,8vw,4.5rem)] text-shadow font-digital min-w-[220px] text-center;
+      }
+      .time-over {
+        @apply text-danger;
+      }
+      .mode-active {
+        @apply bg-white/20 text-white;
+      }
+      .mode-inactive {
+        @apply bg-white/10 text-white/80;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-light to-white min-h-screen p-4 text-dark flex flex-col items-center">
+  <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <!-- 标题和模式切换 -->
+    <div class="bg-primary text-white p-4">
+      <h1 class="text-[clamp(1.3rem,3vw,1.6rem)] font-bold text-center">高级计时器</h1>
+      
+      <div class="flex justify-center mt-2 gap-2 flex-wrap">
+        <button id="stopwatch-mode" class="px-3 py-1.5 rounded-full mode-inactive font-medium btn-hover text-sm">
+          <i class="fa fa-clock-o mr-1"></i>正计时
+        </button>
+        <button id="timer-mode" class="px-3 py-1.5 rounded-full mode-inactive font-medium btn-hover text-sm">
+          <i class="fa fa-hourglass-start mr-1"></i>倒计时
+        </button>
+        <button id="exam-mode" class="px-3 py-1.5 rounded-full mode-active font-medium btn-hover text-sm">
+          <i class="fa fa-pencil mr-1"></i>考试计时
+        </button>
+      </div>
+    </div>
+    
+    <!-- 时间显示区域 -->
+    <div class="p-4 flex flex-col items-center">
+      <!-- 核心：数字显示 -->
+      <div class="flex items-center mb-3">
+        <span id="time-display" class="time-display-container">02:00:00</span>
+        <span id="ms-display" class="ms-display">00</span>
+      </div>
+      
+      <!-- 中间功能区：设置 + 控制按钮 -->
+      <div class="w-full flex flex-col md:flex-row gap-4 mb-3">
+        <!-- 左侧：设置区域 -->
+        <div class="flex-1">
+          <!-- 倒计时设置区域 - 居中显示 -->
+          <div id="timer-setting" class="hidden">
+            <div class="flex justify-center gap-2 flex-wrap">
+              <div class="text-center">
+                <label for="hours" class="block text-xs text-gray-500 mb-0.5">小时</label>
+                <input type="number" id="hours" min="0" max="23" value="0" 
+                      class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-primary/50">
+              </div>
+              <div class="text-center">
+                <label for="minutes" class="block text-xs text-gray-500 mb-0.5">分钟</label>
+                <input type="number" id="minutes" min="0" max="59" value="0" 
+                      class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-primary/50">
+              </div>
+              <div class="text-center">
+                <label for="seconds" class="block text-xs text-gray-500 mb-0.5">秒钟</label>
+                <input type="number" id="seconds" min="0" max="59" value="10" 
+                      class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-primary/50">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 考试计时设置区域 - 居中显示 -->
+          <div id="exam-setting" class="">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <!-- 预设按钮向上移动，比自定义时间下端对齐高出一些 -->
+              <div class="flex flex-col gap-1.5 -mt-3">
+                <button id="exam-2h" class="px-2.5 py-1 bg-exam/10 text-exam rounded-lg btn-hover text-xs">2小时</button>
+                <button id="exam-2h30m" class="px-2.5 py-1 bg-exam/10 text-exam rounded-lg btn-hover text-xs">2小时30分</button>
+              </div>
+              
+              <div class="flex gap-2">
+                <div class="text-center">
+                  <label for="exam-hours" class="block text-xs text-gray-500 mb-0.5">小时</label>
+                  <input type="number" id="exam-hours" min="0" max="23" value="2" 
+                        class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-exam/50">
+                </div>
+                <div class="text-center">
+                  <label for="exam-minutes" class="block text-xs text-gray-500 mb-0.5">分钟</label>
+                  <input type="number" id="exam-minutes" min="0" max="59" value="0" 
+                        class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-exam/50">
+                </div>
+                <div class="text-center">
+                  <label for="exam-seconds" class="block text-xs text-gray-500 mb-0.5">秒钟</label>
+                  <input type="number" id="exam-seconds" min="0" max="59" value="0" 
+                        class="w-12 p-1 border border-gray-300 rounded-lg text-center text-sm font-digital focus:outline-none focus:ring-2 focus:ring-exam/50">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧：控制按钮 -->
+        <div class="flex justify-center items-center">
+          <div class="flex gap-2">
+            <button id="start-btn" class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center btn-hover">
+              <i class="fa fa-play"></i>
+            </button>
+            <button id="pause-btn" class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center btn-hover hidden">
+              <i class="fa fa-pause"></i>
+            </button>
+            <button id="reset-btn" class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center btn-hover">
+              <i class="fa fa-refresh"></i>
+            </button>
+            <button id="lap-btn" class="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center btn-hover">
+              <i class="fa fa-flag"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 功能说明 -->
+      <div class="w-full mb-2 px-2">
+        <div id="stopwatch-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg hidden">
+          <span class="font-medium text-primary">正计时：</span>记录时间，支持分次计时，显示每段用时和累计时间
+        </div>
+        
+        <div id="timer-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg hidden">
+          <span class="font-medium text-primary">倒计时：</span>设置目标时间倒计时，结束时有提示音，支持分次记录
+        </div>
+        
+        <div id="exam-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg">
+          <span class="font-medium text-exam">考试计时：</span>默认2小时，剩余15分钟和结束时有提示音，支持分次记录
+        </div>
+      </div>
+      
+      <!-- 计时记录区域 - 扩展为8次 -->
+      <div class="w-full max-h-[280px] overflow-y-auto border-t border-gray-100 pt-2">
+        <div class="text-center text-gray-500 text-xs mb-1">计时记录</div>
+        <ul id="laps-list" class="space-y-1 text-sm font-digital"></ul>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="mt-4 text-center text-gray-500 text-xs">
+    <p>高级在线计时器 &copy; 2023</p>
+  </footer>
+
+  <script>
+    // 状态变量 - 默认设置为考试计时
+    const state = {
+      mode: 'exam',
+      running: false,
+      startTime: null,
+      elapsedTime: 0,
+      timerInterval: null,
+      targetTime: 0,
+      examDuration: 2 * 60 * 60 * 1000,
+      laps: [],
+      lastAlertTime: -1,
+      audioContext: null,
+      examTimeOver: false,
+      alertPlaying: false
+    };
+    
+    // DOM元素
+    const elements = {
+      timeDisplay: document.getElementById('time-display'),
+      msDisplay: document.getElementById('ms-display'),
+      startBtn: document.getElementById('start-btn'),
+      pauseBtn: document.getElementById('pause-btn'),
+      resetBtn: document.getElementById('reset-btn'),
+      lapBtn: document.getElementById('lap-btn'),
+      stopwatchModeBtn: document.getElementById('stopwatch-mode'),
+      timerModeBtn: document.getElementById('timer-mode'),
+      examModeBtn: document.getElementById('exam-mode'),
+      timerSetting: document.getElementById('timer-setting'),
+      examSetting: document.getElementById('exam-setting'),
+      hoursInput: document.getElementById('hours'),
+      minutesInput: document.getElementById('minutes'),
+      secondsInput: document.getElementById('seconds'),
+      examHoursInput: document.getElementById('exam-hours'),
+      examMinutesInput: document.getElementById('exam-minutes'),
+      examSecondsInput: document.getElementById('exam-seconds'),
+      exam2hBtn: document.getElementById('exam-2h'),
+      exam2h30mBtn: document.getElementById('exam-2h30m'),
+      lapsList: document.getElementById('laps-list'),
+      stopwatchInfo: document.getElementById('stopwatch-info'),
+      timerInfo: document.getElementById('timer-info'),
+      examInfo: document.getElementById('exam-info')
+    };
+    
+    // 初始化音频上下文
+    function initAudioContext() {
+      if (!state.audioContext) {
+        try {
+          state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          console.error('无法初始化音频上下文:', e);
+        }
+      } else if (state.audioContext.state === 'suspended') {
+        state.audioContext.resume();
+      }
+      return state.audioContext;
+    }
+    
+    // 播放提醒声音（可配置间隔时间，默认500ms）
+    function playAlertSound(interval = 500) {
+      if (state.alertPlaying) return;
+      
+      const audioCtx = initAudioContext();
+      if (!audioCtx) return;
+      
+      state.alertPlaying = true;
+      
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.start();
+      
+      // 总时长5秒，根据间隔计算响铃次数
+      const totalDuration = 5000;
+      const beepCount = Math.floor(totalDuration / interval);
+      let currentBeep = 0;
+      
+      const beepInterval = setInterval(() => {
+        if (currentBeep >= beepCount) {
+          clearInterval(beepInterval);
+          oscillator.stop(audioCtx.currentTime + 0.1);
+          state.alertPlaying = false;
+          return;
+        }
+        
+        // 每次响0.2秒
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime + 0.2);
+        
+        currentBeep++;
+      }, interval);
+      
+      // 安全超时机制
+      setTimeout(() => {
+        clearInterval(beepInterval);
+        oscillator.stop();
+        state.alertPlaying = false;
+      }, totalDuration + 100);
+    }
+    
+    // 格式化时间 (毫秒 -> HH:MM:SS)
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      return [
+        hours.toString().padStart(2, '0'),
+        minutes.toString().padStart(2, '0'),
+        seconds.toString().padStart(2, '0')
+      ].join(':');
+    }
+    
+    // 格式化毫秒
+    function formatMilliseconds(ms) {
+      const milliseconds = Math.floor((ms % 1000) / 10);
+      return milliseconds.toString().padStart(2, '0');
+    }
+    
+    // 更新时间显示
+    function updateTimeDisplay() {
+      let mainTime, ms;
+      
+      elements.timeDisplay.classList.remove('time-over');
+      elements.msDisplay.classList.remove('time-over');
+      
+      if (state.mode === 'stopwatch' || state.mode === 'exam') {
+        mainTime = formatTime(state.elapsedTime);
+        ms = formatMilliseconds(state.elapsedTime);
+      } else {
+        const remainingTime = Math.max(0, state.targetTime - state.elapsedTime);
+        mainTime = formatTime(remainingTime);
+        ms = formatMilliseconds(remainingTime);
+        
+        // 倒计时结束提醒（500ms间隔）
+        if (state.running && remainingTime === 0 && state.lastAlertTime !== 0) {
+          playAlertSound();
+          state.lastAlertTime = 0;
+        }
+      }
+      
+      if (state.mode === 'exam' && state.running) {
+        const remainingTime = state.examDuration - state.elapsedTime;
+        
+        // 考试结束提醒（500ms间隔，更急促）
+        if (remainingTime <= 0) {
+          state.examTimeOver = true;
+          elements.timeDisplay.classList.add('time-over');
+          elements.msDisplay.classList.add('time-over');
+          
+          if (state.lastAlertTime !== 0) {
+            playAlertSound(); // 默认500ms间隔
+            recordLap();
+            state.lastAlertTime = 0;
+          }
+        } 
+        // 考试剩余15分钟提醒（1000ms间隔，每秒一次）
+        else if (remainingTime <= 15 * 60 * 1000 && remainingTime > 15 * 60 * 1000 - 100 && 
+                 state.lastAlertTime !== 15 * 60 * 1000) {
+          playAlertSound(1000); // 传入1000ms间隔参数
+          state.lastAlertTime = 15 * 60 * 1000;
+        }
+      }
+      
+      elements.timeDisplay.textContent = mainTime;
+      elements.msDisplay.textContent = ms;
+    }
+    
+    // 开始计时
+    function startTimer() {
+      if (state.running) return;
+      
+      // 用户交互时初始化音频上下文（解决浏览器限制）
+      initAudioContext();
+      
+      state.running = true;
+      state.startTime = Date.now() - state.elapsedTime;
+      
+      if (state.mode === 'timer' && state.targetTime === 0) {
+        setTargetTime();
+        if (state.targetTime === 0) {
+          state.running = false;
+          return;
+        }
+      }
+      
+      elements.startBtn.classList.add('hidden');
+      elements.pauseBtn.classList.remove('hidden');
+      
+      state.timerInterval = setInterval(() => {
+        state.elapsedTime = Date.now() - state.startTime;
+        
+        if (state.mode === 'timer' && state.elapsedTime >= state.targetTime) {
+          state.elapsedTime = state.targetTime;
+          updateTimeDisplay();
+          pauseTimer();
+        } else {
+          updateTimeDisplay();
+        }
+      }, 10);
+    }
+    
+    // 暂停计时
+    function pauseTimer() {
+      if (!state.running) return;
+      
+      state.running = false;
+      clearInterval(state.timerInterval);
+      
+      elements.pauseBtn.classList.add('hidden');
+      elements.startBtn.classList.remove('hidden');
+    }
+    
+    // 重置计时
+    function resetTimer() {
+      pauseTimer();
+      
+      state.elapsedTime = 0;
+      state.lastAlertTime = -1;
+      state.examTimeOver = false;
+      state.alertPlaying = false;
+      
+      if (state.mode === 'timer') {
+        state.targetTime = 0;
+        elements.hoursInput.value = 0;
+        elements.minutesInput.value = 0;
+        elements.secondsInput.value = 10;
+      } else if (state.mode === 'exam') {
+        setExamDuration(2, 0, 0);
+      }
+      
+      state.laps = [];
+      updateTimeDisplay();
+      updateLapsList();
+    }
+    
+    // 记录分次计时
+    function recordLap() {
+      if (!state.running) return;
+      
+      const lapTime = state.elapsedTime;
+      const lastLapTime = state.laps.length > 0 ? state.laps[state.laps.length - 1].total : 0;
+      const lapDuration = lapTime - lastLapTime;
+      
+      let lapTypeText = "第 " + (state.laps.length + 1) + " 段";
+      if (state.mode === 'timer') {
+        lapTypeText = "时间点 " + (state.laps.length + 1);
+      } else if (state.mode === 'exam') {
+        lapTypeText = state.examTimeOver ? "超时记录 " + (state.laps.length + 1) : "考试点 " + (state.laps.length + 1);
+      }
+      
+      state.laps.push({
+        index: state.laps.length + 1,
+        duration: lapDuration,
+        total: lapTime,
+        typeText: lapTypeText,
+        isOverTime: state.mode === 'exam' && state.examTimeOver
+      });
+      
+      updateLapsList();
+    }
+    
+    // 更新分次计时列表
+    function updateLapsList() {
+      elements.lapsList.innerHTML = '';
+      
+      if (state.laps.length === 0) {
+        elements.lapsList.innerHTML = '<li class="text-center text-gray-400 text-xs py-2">暂无记录</li>';
+        return;
+      }
+      
+      state.laps.forEach(lap => {
+        const li = document.createElement('li');
+        li.className = `flex justify-between items-center p-1.5 border-b border-gray-100 last:border-0 ${lap.isOverTime ? 'text-danger' : ''}`;
+        
+        let durationStr, totalStr;
+        
+        if (state.mode === 'timer') {
+          const remainingTotal = Math.max(0, state.targetTime - lap.total);
+          const remainingDuration = Math.max(0, state.targetTime - lap.total) - 
+                                  (state.laps.length > 1 ? Math.max(0, state.targetTime - state.laps[lap.index-2].total) : 0);
+          durationStr = formatTime(remainingDuration) + '.' + formatMilliseconds(remainingDuration);
+          totalStr = formatTime(remainingTotal) + '.' + formatMilliseconds(remainingTotal);
+        } else {
+          durationStr = formatTime(lap.duration) + '.' + formatMilliseconds(lap.duration);
+          totalStr = formatTime(lap.total) + '.' + formatMilliseconds(lap.total);
+        }
+        
+        li.innerHTML = `
+          <span class="text-gray-500 text-xs ${lap.isOverTime ? 'text-danger' : ''}">${lap.typeText}</span>
+          <span class="text-gray-700 text-sm ${lap.isOverTime ? 'text-danger' : ''}">${durationStr}</span>
+          <span class="${lap.index === state.laps.length ? 'text-primary font-medium' : 'text-gray-600'} text-sm ${lap.isOverTime ? 'text-danger' : ''}">${totalStr}</span>
+        `;
+        elements.lapsList.appendChild(li);
+      });
+      
+      elements.lapsList.scrollTop = elements.lapsList.scrollHeight;
+    }
+    
+    // 设置倒计时目标时间
+    function setTargetTime() {
+      const hours = parseInt(elements.hoursInput.value) || 0;
+      const minutes = parseInt(elements.minutesInput.value) || 0;
+      const seconds = parseInt(elements.secondsInput.value) || 0;
+      
+      state.targetTime = (hours * 3600 + minutes * 60 + seconds) * 1000;
+      return state.targetTime > 0;
+    }
+    
+    // 设置考试时长
+    function setExamDuration(hours, minutes, seconds) {
+      state.examDuration = (hours * 3600 + minutes * 60 + seconds) * 1000;
+      elements.examHoursInput.value = hours;
+      elements.examMinutesInput.value = minutes;
+      elements.examSecondsInput.value = seconds;
+    }
+    
+    // 切换模式
+    function switchMode(mode) {
+      if (state.mode === mode) return;
+      
+      pauseTimer();
+      state.lastAlertTime = -1;
+      state.elapsedTime = 0;
+      state.laps = [];
+      state.examTimeOver = false;
+      state.alertPlaying = false;
+      
+      state.mode = mode;
+      updateLapsList();
+      
+      elements.stopwatchModeBtn.classList.remove('mode-active', 'mode-inactive');
+      elements.timerModeBtn.classList.remove('mode-active', 'mode-inactive');
+      elements.examModeBtn.classList.remove('mode-active', 'mode-inactive');
+      
+      elements.timerSetting.classList.add('hidden');
+      elements.examSetting.classList.add('hidden');
+      
+      elements.stopwatchInfo.classList.add('hidden');
+      elements.timerInfo.classList.add('hidden');
+      elements.examInfo.classList.add('hidden');
+      
+      switch(mode) {
+        case 'stopwatch':
+          elements.stopwatchModeBtn.classList.add('mode-active');
+          elements.timerModeBtn.classList.add('mode-inactive');
+          elements.examModeBtn.classList.add('mode-inactive');
+          elements.stopwatchInfo.classList.remove('hidden');
+          break;
+        case 'timer':
+          elements.stopwatchModeBtn.classList.add('mode-inactive');
+          elements.timerModeBtn.classList.add('mode-active');
+          elements.examModeBtn.classList.add('mode-inactive');
+          elements.timerSetting.classList.remove('hidden');
+          elements.timerInfo.classList.remove('hidden');
+          state.targetTime = 0;
+          elements.hoursInput.value = 0;
+          elements.minutesInput.value = 0;
+          elements.secondsInput.value = 10;
+          break;
+        case 'exam':
+          elements.stopwatchModeBtn.classList.add('mode-inactive');
+          elements.timerModeBtn.classList.add('mode-inactive');
+          elements.examModeBtn.classList.add('mode-active');
+          elements.examSetting.classList.remove('hidden');
+          elements.examInfo.classList.remove('hidden');
+          setExamDuration(2, 0, 0);
+          break;
+      }
+      
+      updateTimeDisplay();
+    }
+    
+    // 事件监听
+    elements.startBtn.addEventListener('click', startTimer);
+    elements.pauseBtn.addEventListener('click', pauseTimer);
+    elements.resetBtn.addEventListener('click', resetTimer);
+    elements.lapBtn.addEventListener('click', recordLap);
+    
+    elements.stopwatchModeBtn.addEventListener('click', () => switchMode('stopwatch'));
+    elements.timerModeBtn.addEventListener('click', () => switchMode('timer'));
+    elements.examModeBtn.addEventListener('click', () => switchMode('exam'));
+    
+    elements.exam2hBtn.addEventListener('click', () => {
+      if (state.mode === 'exam' && !state.running) {
+        setExamDuration(2, 0, 0);
+      }
+    });
+    
+    elements.exam2h30mBtn.addEventListener('click', () => {
+      if (state.mode === 'exam' && !state.running) {
+        setExamDuration(2, 30, 0);
+      }
+    });
+    
+    function updateExamDurationOnInput() {
+      if (state.mode === 'exam' && !state.running) {
+        const hours = parseInt(elements.examHoursInput.value) || 0;
+        const minutes = parseInt(elements.examMinutesInput.value) || 0;
+        const seconds = parseInt(elements.examSecondsInput.value) || 0;
+        setExamDuration(hours, minutes, seconds);
+      }
+    }
+    
+    elements.examHoursInput.addEventListener('input', updateExamDurationOnInput);
+    elements.examMinutesInput.addEventListener('input', updateExamDurationOnInput);
+    elements.examSecondsInput.addEventListener('input', updateExamDurationOnInput);
+    
+    elements.hoursInput.addEventListener('input', () => {
+      if (state.mode === 'timer' && !state.running) {
+        setTargetTime();
+      }
+    });
+    
+    elements.minutesInput.addEventListener('input', () => {
+      if (state.mode === 'timer' && !state.running) {
+        setTargetTime();
+      }
+    });
+    
+    elements.secondsInput.addEventListener('input', () => {
+      if (state.mode === 'timer' && !state.running) {
+        setTargetTime();
+      }
+    });
+    
+    // 初始化
+    updateTimeDisplay();
+    updateLapsList();
+  </script>
+</body>
+</html>
