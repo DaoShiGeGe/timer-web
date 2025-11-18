@@ -21,7 +21,7 @@
             danger: '#F53F3F'
           },
           fontFamily: {
-            digital: ['SimHei', '黑体', 'monospace'], // 黑体
+            digital: ['SimHei', '黑体', 'monospace'],
             inter: ['Inter', 'system-ui', 'sans-serif'],
           },
         },
@@ -39,6 +39,9 @@
       }
       .btn-hover {
         @apply transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0;
+      }
+      .btn-animation {
+        @apply transition-all duration-300 transform hover:scale-105 active:scale-95;
       }
       .ms-display {
         @apply text-[clamp(1rem,3vw,1.5rem)] text-gray-500 ml-2 align-text-top font-digital min-w-[30px] text-right;
@@ -81,15 +84,15 @@
     <div class="p-4 flex flex-col items-center">
       <!-- 核心：数字显示 -->
       <div class="flex items-center mb-3">
-        <span id="time-display" class="time-display-container">02:00:00</span>
+        <span id="time-display" class="time-display-container">00:00:00</span>
         <span id="ms-display" class="ms-display">00</span>
       </div>
       
       <!-- 中间功能区：设置 + 控制按钮 -->
       <div class="w-full flex flex-col md:flex-row gap-4 mb-3">
         <!-- 左侧：设置区域 -->
-        <div class="flex-1">
-          <!-- 倒计时设置区域 - 居中显示 -->
+        <div class="flex-1 relative">
+          <!-- 倒计时设置区域 -->
           <div id="timer-setting" class="hidden">
             <div class="flex justify-center gap-2 flex-wrap">
               <div class="text-center">
@@ -110,10 +113,9 @@
             </div>
           </div>
           
-          <!-- 考试计时设置区域 - 居中显示 -->
+          <!-- 考试计时设置区域 -->
           <div id="exam-setting" class="">
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <!-- 预设按钮向上移动，比自定义时间下端对齐高出一些 -->
               <div class="flex flex-col gap-1.5 -mt-3">
                 <button id="exam-2h" class="px-2.5 py-1 bg-exam/10 text-exam rounded-lg btn-hover text-xs">2小时</button>
                 <button id="exam-2h30m" class="px-2.5 py-1 bg-exam/10 text-exam rounded-lg btn-hover text-xs">2小时30分</button>
@@ -140,44 +142,36 @@
           </div>
         </div>
         
-        <!-- 右侧：控制按钮 -->
+        <!-- 右侧：控制按钮 - 修改了顺序和样式 -->
         <div class="flex justify-center items-center">
           <div class="flex gap-2">
-            <button id="start-btn" class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center btn-hover">
+            <!-- 分次计时按钮 -->
+            <button id="lap-btn" class="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center btn-animation hover:bg-accent/90 shadow-md hover:shadow-lg">
+              <i class="fa fa-flag"></i>
+            </button>
+            
+            <!-- 开始/暂停按钮 -->
+            <button id="start-btn" class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center btn-animation hover:bg-primary/90 shadow-md hover:shadow-lg">
               <i class="fa fa-play"></i>
             </button>
-            <button id="pause-btn" class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center btn-hover hidden">
+            <button id="pause-btn" class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center btn-animation hover:bg-gray-300 shadow-md hover:shadow-lg hidden">
               <i class="fa fa-pause"></i>
             </button>
-            <button id="reset-btn" class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center btn-hover">
+            
+            <!-- 重置按钮 - 修改为红色 -->
+            <button id="reset-btn" class="w-12 h-12 rounded-full bg-danger text-white flex items-center justify-center btn-animation hover:bg-red-600 shadow-md hover:shadow-lg">
               <i class="fa fa-refresh"></i>
-            </button>
-            <button id="lap-btn" class="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center btn-hover">
-              <i class="fa fa-flag"></i>
             </button>
           </div>
         </div>
       </div>
       
-      <!-- 功能说明 -->
-      <div class="w-full mb-2 px-2">
-        <div id="stopwatch-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg hidden">
-          <span class="font-medium text-primary">正计时：</span>记录时间，支持分次计时，显示每段用时和累计时间
-        </div>
-        
-        <div id="timer-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg hidden">
-          <span class="font-medium text-primary">倒计时：</span>设置目标时间倒计时，结束时有提示音，支持分次记录
-        </div>
-        
-        <div id="exam-info" class="text-xs text-gray-500 bg-light/50 p-2 rounded-lg">
-          <span class="font-medium text-exam">考试计时：</span>默认2小时，剩余15分钟和结束时有提示音，支持分次记录
-        </div>
-      </div>
-      
-      <!-- 计时记录区域 - 扩展为8次 -->
-      <div class="w-full max-h-[280px] overflow-y-auto border-t border-gray-100 pt-2">
+      <!-- 计时记录区域 -->
+      <div class="w-full max-h-[320px] overflow-y-auto border-t border-gray-100 pt-2">
         <div class="text-center text-gray-500 text-xs mb-1">计时记录</div>
-        <ul id="laps-list" class="space-y-1 text-sm font-digital"></ul>
+        <ul id="laps-list" class="space-y-1 text-sm font-digital">
+          <!-- 这里将使用倒序展示，最新的记录在最上面 -->
+        </ul>
       </div>
     </div>
   </div>
@@ -187,19 +181,48 @@
   </footer>
 
   <script>
-    // 状态变量 - 默认设置为考试计时
+    // 状态变量 - 各模式独立运行，互不干扰
     const state = {
-      mode: 'exam',
-      running: false,
-      startTime: null,
-      elapsedTime: 0,
-      timerInterval: null,
-      targetTime: 0,
-      examDuration: 2 * 60 * 60 * 1000,
-      laps: [],
-      lastAlertTime: -1,
+      currentMode: 'exam', // 当前显示的模式
+      modes: {
+        stopwatch: {
+          running: false,
+          startTime: null,
+          elapsedTime: 0,
+          laps: [],
+          currentLapStart: 0, // 当前分段的开始时间
+          currentLapIndex: 0  // 当前分段序号
+        },
+        timer: {
+          running: false,
+          startTime: null,
+          elapsedTime: 0,
+          targetTime: 10 * 1000, // 目标倒计时时间，默认10秒
+          laps: [],
+          lastAlertTime: -1,
+          currentLapStart: 0, // 当前分段的开始时间
+          currentLapIndex: 0,  // 当前分段序号
+          isOverTime: false, // 是否已超时
+          overTimeStart: 0 // 超时开始时间
+        },
+        exam: {
+          running: false,
+          startTime: null,
+          elapsedTime: 0,
+          duration: 2 * 60 * 60 * 1000, // 考试总时长（毫秒）
+          laps: [],
+          hasTriggered15min: false, // 剩余15分钟提醒标记
+          hasTriggeredEnd: false, // 结束提醒标记
+          overTimeStart: 0, // 超时开始时间（毫秒）
+          lastOverTimeLap: 0, // 上次超时分段的时间点
+          currentLapStart: 0, // 当前分段的开始时间
+          currentLapIndex: 0,  // 当前分段序号
+          overtimeLaps: [], // 超时后的分段记录
+          overtimeLapCount: 0 // 超时分段计数器
+        }
+      },
+      globalInterval: null, // 全局计时器（统一更新所有运行中的模式）
       audioContext: null,
-      examTimeOver: false,
       alertPlaying: false
     };
     
@@ -224,10 +247,7 @@
       examSecondsInput: document.getElementById('exam-seconds'),
       exam2hBtn: document.getElementById('exam-2h'),
       exam2h30mBtn: document.getElementById('exam-2h30m'),
-      lapsList: document.getElementById('laps-list'),
-      stopwatchInfo: document.getElementById('stopwatch-info'),
-      timerInfo: document.getElementById('timer-info'),
-      examInfo: document.getElementById('exam-info')
+      lapsList: document.getElementById('laps-list')
     };
     
     // 初始化音频上下文
@@ -235,8 +255,14 @@
       if (!state.audioContext) {
         try {
           state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          // 立即恢复上下文，确保可以播放声音
+          if (state.audioContext.state === 'suspended') {
+            state.audioContext.resume();
+          }
         } catch (e) {
           console.error('无法初始化音频上下文:', e);
+          // 降级方案：使用HTML5 Audio
+          return null;
         }
       } else if (state.audioContext.state === 'suspended') {
         state.audioContext.resume();
@@ -244,28 +270,75 @@
       return state.audioContext;
     }
     
-    // 播放提醒声音（可配置间隔时间，默认500ms）
+    // 创建音频缓冲区
+    function createBeepBuffer(audioContext, duration, frequency, volume) {
+      const sampleRate = audioContext.sampleRate;
+      const numSamples = Math.floor(duration * sampleRate);
+      const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < numSamples; i++) {
+        data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume;
+      }
+      
+      return buffer;
+    }
+    
+    // 播放提醒声音
     function playAlertSound(interval = 500) {
       if (state.alertPlaying) return;
       
+      // 先尝试恢复音频上下文
       const audioCtx = initAudioContext();
-      if (!audioCtx) return;
+      
+      // 如果Web Audio API不可用，尝试使用HTML5 Audio作为降级方案
+      if (!audioCtx) {
+        try {
+          // 创建一个简单的beep声音
+          const beep = () => {
+            const oscillator = new (window.AudioContext || window.webkitAudioContext)().createOscillator();
+            const gainNode = oscillator.context.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(oscillator.context.destination);
+            
+            oscillator.frequency.value = 800;
+            gainNode.gain.value = 0.1;
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.001, oscillator.context.currentTime + 0.2);
+            oscillator.stop(oscillator.context.currentTime + 0.2);
+          };
+          
+          state.alertPlaying = true;
+          
+          // 播放5次beep，每次间隔interval毫秒
+          let count = 0;
+          const maxCount = 5;
+          
+          const playInterval = setInterval(() => {
+            if (count >= maxCount) {
+              clearInterval(playInterval);
+              state.alertPlaying = false;
+              return;
+            }
+            
+            beep();
+            count++;
+          }, interval);
+          
+        } catch (e) {
+          console.log('无法播放提醒声音');
+        }
+        return;
+      }
       
       state.alertPlaying = true;
       
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+      // 创建beep缓冲区
+      const beepBuffer = createBeepBuffer(audioCtx, 0.2, 800, 0.1);
       
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.start();
-      
-      // 总时长5秒，根据间隔计算响铃次数
+      // 总时长5秒
       const totalDuration = 5000;
       const beepCount = Math.floor(totalDuration / interval);
       let currentBeep = 0;
@@ -273,28 +346,33 @@
       const beepInterval = setInterval(() => {
         if (currentBeep >= beepCount) {
           clearInterval(beepInterval);
-          oscillator.stop(audioCtx.currentTime + 0.1);
           state.alertPlaying = false;
           return;
         }
         
-        // 每次响0.2秒
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime + 0.2);
+        // 播放beep
+        const source = audioCtx.createBufferSource();
+        source.buffer = beepBuffer;
+        source.connect(audioCtx.destination);
+        source.start();
         
         currentBeep++;
       }, interval);
       
-      // 安全超时机制
+      // 安全超时
       setTimeout(() => {
         clearInterval(beepInterval);
-        oscillator.stop();
         state.alertPlaying = false;
       }, totalDuration + 100);
     }
     
     // 格式化时间 (毫秒 -> HH:MM:SS)
     function formatTime(ms) {
+      // 确保时间不为负数
+      if (ms < 0) {
+        ms = 0;
+      }
+      
       const totalSeconds = Math.floor(ms / 1000);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -309,222 +387,507 @@
     
     // 格式化毫秒
     function formatMilliseconds(ms) {
+      // 确保时间不为负数
+      if (ms < 0) {
+        ms = 0;
+      }
+      
       const milliseconds = Math.floor((ms % 1000) / 10);
       return milliseconds.toString().padStart(2, '0');
     }
     
-    // 更新时间显示
+    // 全局计时器更新函数（更新所有运行中的模式）
+    function updateAllRunningModes() {
+      const now = Date.now();
+      
+      // 更新所有运行中的模式
+      Object.values(state.modes).forEach(mode => {
+        if (mode.running && mode.startTime) {
+          mode.elapsedTime = now - mode.startTime;
+        }
+      });
+      
+      // 更新当前显示模式的时间
+      updateTimeDisplay();
+      
+      // 更新当前分段的时间
+      updateCurrentLapTime();
+      
+      // 如果是考试超时状态，实时更新超时分段的时间
+      if (state.currentMode === 'exam' && state.modes.exam.hasTriggeredEnd) {
+        updateOverTimeLap();
+      }
+    }
+    
+    // 更新当前分段的时间
+    function updateCurrentLapTime() {
+      const mode = state.modes[state.currentMode];
+      if (!mode.running || mode.currentLapIndex === 0) return;
+      
+      // 找到当前分段
+      const currentLap = mode.laps.find(lap => lap.isCurrent);
+      if (currentLap) {
+        currentLap.duration = mode.elapsedTime - mode.currentLapStart;
+        currentLap.total = mode.elapsedTime;
+      }
+      
+      updateLapsList();
+    }
+    
+    // 更新当前模式的时间显示
     function updateTimeDisplay() {
+      const mode = state.modes[state.currentMode];
       let mainTime, ms;
       
+      // 首先移除红色警告样式
       elements.timeDisplay.classList.remove('time-over');
       elements.msDisplay.classList.remove('time-over');
       
-      if (state.mode === 'stopwatch' || state.mode === 'exam') {
-        mainTime = formatTime(state.elapsedTime);
-        ms = formatMilliseconds(state.elapsedTime);
-      } else {
-        const remainingTime = Math.max(0, state.targetTime - state.elapsedTime);
-        mainTime = formatTime(remainingTime);
-        ms = formatMilliseconds(remainingTime);
-        
-        // 倒计时结束提醒（500ms间隔）
-        if (state.running && remainingTime === 0 && state.lastAlertTime !== 0) {
-          playAlertSound();
-          state.lastAlertTime = 0;
-        }
-      }
-      
-      if (state.mode === 'exam' && state.running) {
-        const remainingTime = state.examDuration - state.elapsedTime;
-        
-        // 考试结束提醒（500ms间隔，更急促）
-        if (remainingTime <= 0) {
-          state.examTimeOver = true;
-          elements.timeDisplay.classList.add('time-over');
-          elements.msDisplay.classList.add('time-over');
+      switch (state.currentMode) {
+        case 'stopwatch':
+          mainTime = formatTime(mode.elapsedTime);
+          ms = formatMilliseconds(mode.elapsedTime);
+          break;
           
-          if (state.lastAlertTime !== 0) {
-            playAlertSound(); // 默认500ms间隔
-            recordLap();
-            state.lastAlertTime = 0;
+        case 'timer':
+          // 修复：确保剩余时间不为负数
+          const remainingTime = Math.max(0, mode.targetTime - mode.elapsedTime);
+          
+          // 检查是否已超时
+          if (mode.running && mode.elapsedTime >= mode.targetTime && !mode.isOverTime) {
+            mode.isOverTime = true;
+            mode.overTimeStart = mode.elapsedTime;
+            playAlertSound();
           }
-        } 
-        // 考试剩余15分钟提醒（1000ms间隔，每秒一次）
-        else if (remainingTime <= 15 * 60 * 1000 && remainingTime > 15 * 60 * 1000 - 100 && 
-                 state.lastAlertTime !== 15 * 60 * 1000) {
-          playAlertSound(1000); // 传入1000ms间隔参数
-          state.lastAlertTime = 15 * 60 * 1000;
-        }
+          
+          // 如果已超时，显示正计时时间并变红
+          if (mode.isOverTime) {
+            const overTime = mode.elapsedTime - mode.targetTime;
+            mainTime = formatTime(overTime);
+            ms = formatMilliseconds(overTime);
+            elements.timeDisplay.classList.add('time-over');
+            elements.msDisplay.classList.add('time-over');
+          } else {
+            mainTime = formatTime(remainingTime);
+            ms = formatMilliseconds(remainingTime);
+            
+            // 修复：初始状态下颜色为默认颜色
+            // 只有当正在运行且剩余时间为0时才变红
+            if (mode.running && remainingTime === 0) {
+              elements.timeDisplay.classList.add('time-over');
+              elements.msDisplay.classList.add('time-over');
+            }
+          }
+          
+          // 倒计时结束提醒
+          if (mode.running && remainingTime === 0 && mode.lastAlertTime !== 0) {
+            playAlertSound();
+            mode.lastAlertTime = 0;
+          }
+          break;
+          
+        case 'exam':
+          // 考试计时采用正计时（显示已用时间）
+          mainTime = formatTime(mode.elapsedTime);
+          ms = formatMilliseconds(mode.elapsedTime);
+          
+          // 剩余时间计算
+          const remainingTimeExam = mode.duration - mode.elapsedTime;
+          
+          // 记录超时开始时间
+          if (mode.running && mode.elapsedTime >= mode.duration && !mode.hasTriggeredEnd) {
+            state.modes.exam.overTimeStart = mode.elapsedTime;
+            state.modes.exam.lastOverTimeLap = mode.elapsedTime;
+          }
+          
+          // 考试剩余15分钟提醒（仅当总时长≥15分钟时触发）
+          if (mode.running && 
+              mode.duration >= 15 * 60 * 1000 && // 总时长≥15分钟
+              remainingTimeExam <= 15 * 60 * 1000 && 
+              remainingTimeExam > 0 && 
+              !mode.hasTriggered15min) {
+            playAlertSound(1000); // 每秒一次
+            mode.hasTriggered15min = true;
+          }
+          
+          // 考试结束提醒
+          if (mode.running && mode.elapsedTime >= mode.duration && !mode.hasTriggeredEnd) {
+            elements.timeDisplay.classList.add('time-over');
+            elements.msDisplay.classList.add('time-over');
+            
+            // 创建考试结束分段
+            createExamEndLaps();
+            
+            playAlertSound(); // 每0.5秒一次
+            mode.hasTriggeredEnd = true;
+          }
+          
+          // 修复：超时后始终显示红色
+          if (mode.elapsedTime >= mode.duration) {
+            elements.timeDisplay.classList.add('time-over');
+            elements.msDisplay.classList.add('time-over');
+          }
+          break;
       }
       
       elements.timeDisplay.textContent = mainTime;
       elements.msDisplay.textContent = ms;
     }
     
-    // 开始计时
-    function startTimer() {
-      if (state.running) return;
+    // 创建考试结束时的分段
+    function createExamEndLaps() {
+      const mode = state.modes.exam;
+      const endTime = mode.elapsedTime;
       
-      // 用户交互时初始化音频上下文（解决浏览器限制）
+      // 如果有当前分段，先结束它
+      if (mode.currentLapIndex > 0) {
+        const currentLap = mode.laps.find(lap => lap.isCurrent);
+        if (currentLap) {
+          currentLap.duration = endTime - mode.currentLapStart;
+          currentLap.total = endTime;
+          currentLap.isCurrent = false;
+          currentLap.isDynamic = false;
+        }
+      }
+      
+      // 计算当前段数
+      const segmentNumber = mode.laps.filter(lap => !lap.isCurrent).length + 1;
+      
+      // 增加超时分段计数器
+      mode.overtimeLapCount++;
+      
+      // 创建超时段的记录（从0开始计时）
+      mode.laps.push({
+        index: segmentNumber,
+        duration: 0, // 初始为0
+        total: endTime,
+        typeText: mode.overtimeLapCount === 1 ? "超时" : `超时${mode.overtimeLapCount}`,
+        isOverTime: true,
+        isDynamic: true, // 标记为动态更新的超时记录
+        isCurrent: false,
+        startTime: endTime // 记录超时开始时间
+      });
+      
+      // 初始化超时后的分段记录
+      mode.overtimeLaps = [{
+        index: 1,
+        duration: 0,
+        overtimeTotal: 0, // 超时后的累计时间
+        typeText: mode.overtimeLapCount === 1 ? "超时" : `超时${mode.overtimeLapCount}`,
+        isOverTime: true,
+        isDynamic: true,
+        isCurrent: false,
+        startTime: endTime
+      }];
+      
+      // 更新当前分段信息
+      mode.currentLapIndex = segmentNumber;
+      mode.currentLapStart = endTime;
+      
+      updateLapsList();
+    }
+    
+    // 更新超时分段的时间（实时更新）
+    function updateOverTimeLap() {
+      const mode = state.modes.exam;
+      if (!mode.running || !mode.hasTriggeredEnd) return;
+      
+      // 更新超时后的累计时间
+      if (mode.overtimeLaps.length > 0) {
+        const lastOvertimeLap = mode.overtimeLaps[mode.overtimeLaps.length - 1];
+        lastOvertimeLap.duration = mode.elapsedTime - lastOvertimeLap.startTime;
+        lastOvertimeLap.overtimeTotal = mode.elapsedTime - mode.duration;
+      }
+      
+      // 找到最后一个超时分段
+      const overTimeLap = [...mode.laps].reverse().find(lap => lap.isDynamic && lap.isOverTime && !lap.isCurrent);
+      if (!overTimeLap) return;
+      
+      // 更新超时持续时间
+      overTimeLap.duration = mode.elapsedTime - overTimeLap.startTime;
+      overTimeLap.total = mode.elapsedTime;
+      
+      updateLapsList();
+    }
+    
+    // 开始当前模式计时
+    function startTimer() {
+      const mode = state.modes[state.currentMode];
+      if (mode.running) return;
+      
+      // 初始化音频上下文
       initAudioContext();
       
-      state.running = true;
-      state.startTime = Date.now() - state.elapsedTime;
-      
-      if (state.mode === 'timer' && state.targetTime === 0) {
-        setTargetTime();
-        if (state.targetTime === 0) {
-          state.running = false;
+      // 倒计时模式检查目标时间
+      if (state.currentMode === 'timer' && mode.targetTime === 0) {
+        if (!setTargetTime()) {
+          alert('请设置有效的倒计时时间');
           return;
         }
       }
       
+      // 如果还没有分段，自动创建第一个分段（适用于所有模式）
+      if (mode.currentLapIndex === 0) {
+        mode.currentLapIndex = 1;
+        mode.currentLapStart = 0;
+        
+        // 创建第一个分段
+        mode.laps.push({
+          index: 1,
+          duration: 0,
+          total: 0,
+          typeText: "第 1 段",
+          isOverTime: false,
+          isDynamic: true,
+          isCurrent: true
+        });
+      }
+      
+      // 设置开始时间
+      mode.startTime = Date.now() - mode.elapsedTime;
+      mode.running = true;
+      
+      // 启动全局计时器（如果未启动）
+      if (!state.globalInterval) {
+        state.globalInterval = setInterval(updateAllRunningModes, 10);
+      }
+      
+      // 更新按钮状态
       elements.startBtn.classList.add('hidden');
       elements.pauseBtn.classList.remove('hidden');
       
-      state.timerInterval = setInterval(() => {
-        state.elapsedTime = Date.now() - state.startTime;
-        
-        if (state.mode === 'timer' && state.elapsedTime >= state.targetTime) {
-          state.elapsedTime = state.targetTime;
-          updateTimeDisplay();
-          pauseTimer();
-        } else {
-          updateTimeDisplay();
-        }
-      }, 10);
+      // 更新分段列表显示
+      updateLapsList();
     }
     
-    // 暂停计时
+    // 暂停当前模式计时
     function pauseTimer() {
-      if (!state.running) return;
+      const mode = state.modes[state.currentMode];
+      if (!mode.running) return;
       
-      state.running = false;
-      clearInterval(state.timerInterval);
+      mode.running = false;
       
+      // 更新按钮状态
       elements.pauseBtn.classList.add('hidden');
       elements.startBtn.classList.remove('hidden');
+      
+      // 检查是否所有模式都已暂停，如果是则停止全局计时器
+      const allPaused = Object.values(state.modes).every(m => !m.running);
+      if (allPaused && state.globalInterval) {
+        clearInterval(state.globalInterval);
+        state.globalInterval = null;
+      }
     }
     
-    // 重置计时
+    // 重置当前模式计时
     function resetTimer() {
-      pauseTimer();
+      const mode = state.modes[state.currentMode];
+      const wasRunning = mode.running;
       
-      state.elapsedTime = 0;
-      state.lastAlertTime = -1;
-      state.examTimeOver = false;
-      state.alertPlaying = false;
-      
-      if (state.mode === 'timer') {
-        state.targetTime = 0;
-        elements.hoursInput.value = 0;
-        elements.minutesInput.value = 0;
-        elements.secondsInput.value = 10;
-      } else if (state.mode === 'exam') {
-        setExamDuration(2, 0, 0);
+      // 暂停当前模式
+      if (wasRunning) {
+        pauseTimer();
       }
       
-      state.laps = [];
+      // 重置状态
+      mode.elapsedTime = 0;
+      mode.startTime = null;
+      mode.laps = [];
+      mode.currentLapStart = 0;
+      mode.currentLapIndex = 0;
+      
+      // 模式特定重置
+      if (state.currentMode === 'stopwatch') {
+        // 正计时模式完全重置
+      } else if (state.currentMode === 'timer') {
+        // 倒计时模式：不重置目标时间，只重置其他状态
+        mode.lastAlertTime = -1;
+        mode.isOverTime = false;
+        mode.overTimeStart = 0;
+      } else if (state.currentMode === 'exam') {
+        // 考试计时模式：不重置目标时间，只重置其他状态
+        mode.hasTriggered15min = false;
+        mode.hasTriggeredEnd = false;
+        mode.overTimeStart = 0;
+        mode.lastOverTimeLap = 0;
+        mode.overtimeLaps = [];
+        mode.overtimeLapCount = 0;
+      }
+      
+      // 更新显示 - 确保重置后颜色恢复正常
       updateTimeDisplay();
       updateLapsList();
     }
     
-    // 记录分次计时
+    // 记录分次计时（适用于所有模式）
     function recordLap() {
-      if (!state.running) return;
+      const mode = state.modes[state.currentMode];
+      if (!mode.running) return;
       
-      const lapTime = state.elapsedTime;
-      const lastLapTime = state.laps.length > 0 ? state.laps[state.laps.length - 1].total : 0;
-      const lapDuration = lapTime - lastLapTime;
+      const now = mode.elapsedTime;
       
-      let lapTypeText = "第 " + (state.laps.length + 1) + " 段";
-      if (state.mode === 'timer') {
-        lapTypeText = "时间点 " + (state.laps.length + 1);
-      } else if (state.mode === 'exam') {
-        lapTypeText = state.examTimeOver ? "超时记录 " + (state.laps.length + 1) : "考试点 " + (state.laps.length + 1);
+      // 如果有当前分段，先结束它
+      if (mode.currentLapIndex > 0) {
+        const currentLap = mode.laps.find(lap => lap.isCurrent);
+        if (currentLap) {
+          currentLap.duration = now - mode.currentLapStart;
+          currentLap.total = now;
+          currentLap.isCurrent = false;
+          currentLap.isDynamic = false;
+        }
       }
       
-      state.laps.push({
-        index: state.laps.length + 1,
-        duration: lapDuration,
-        total: lapTime,
-        typeText: lapTypeText,
-        isOverTime: state.mode === 'exam' && state.examTimeOver
+      // 开始新分段
+      mode.currentLapIndex++;
+      mode.currentLapStart = now;
+      
+      // 创建新分段的显示（持续时间为0）
+      let typeText = `第 ${mode.currentLapIndex} 段`;
+      
+      // 倒计时模式超时处理
+      if (state.currentMode === 'timer' && mode.isOverTime) {
+        typeText = `超时${mode.currentLapIndex}`;
+      }
+      
+      // 考试模式特殊处理
+      if (state.currentMode === 'exam') {
+        const isOverTime = now >= mode.duration;
+        if (isOverTime && mode.hasTriggeredEnd) {
+          mode.overtimeLapCount++;
+          typeText = mode.overtimeLapCount === 1 ? "超时" : `超时${mode.overtimeLapCount}`;
+          
+          // 记录超时后的分段
+          mode.overtimeLaps.push({
+            index: mode.overtimeLapCount,
+            duration: 0,
+            overtimeTotal: now - mode.duration,
+            typeText: typeText,
+            isOverTime: true,
+            isDynamic: true,
+            isCurrent: false,
+            startTime: now
+          });
+        }
+      }
+      
+      mode.laps.push({
+        index: mode.currentLapIndex,
+        duration: 0,
+        total: now,
+        typeText: typeText,
+        isOverTime: (state.currentMode === 'timer' && mode.isOverTime) || 
+                   (state.currentMode === 'exam' && now >= mode.duration),
+        isDynamic: true,
+        isCurrent: true,
+        startTime: now
       });
       
       updateLapsList();
     }
     
-    // 更新分次计时列表
+    // 更新分次计时列表（倒序展示，最新的记录在最上面）
     function updateLapsList() {
+      const mode = state.modes[state.currentMode];
       elements.lapsList.innerHTML = '';
       
-      if (state.laps.length === 0) {
+      if (mode.laps.length === 0) {
         elements.lapsList.innerHTML = '<li class="text-center text-gray-400 text-xs py-2">暂无记录</li>';
         return;
       }
       
-      state.laps.forEach(lap => {
+      // 创建所有记录的副本并倒序排列（最新的在最上面）
+      const allLaps = [...mode.laps];
+      const reversedLaps = allLaps.reverse();
+      
+      // 显示所有分段记录（倒序显示，最新的记录在最上面）
+      reversedLaps.forEach(lap => {
         const li = document.createElement('li');
-        li.className = `flex justify-between items-center p-1.5 border-b border-gray-100 last:border-0 ${lap.isOverTime ? 'text-danger' : ''}`;
         
-        let durationStr, totalStr;
+        // 根据分段状态设置样式
+        let textColorClass = '';
+        if (lap.isCurrent) {
+          textColorClass = 'text-blue-500'; // 当前分段用蓝色显示
+        } else if (lap.isOverTime) {
+          textColorClass = 'text-danger'; // 超时分段用红色显示
+        }
         
-        if (state.mode === 'timer') {
-          const remainingTotal = Math.max(0, state.targetTime - lap.total);
-          const remainingDuration = Math.max(0, state.targetTime - lap.total) - 
-                                  (state.laps.length > 1 ? Math.max(0, state.targetTime - state.laps[lap.index-2].total) : 0);
-          durationStr = formatTime(remainingDuration) + '.' + formatMilliseconds(remainingDuration);
-          totalStr = formatTime(remainingTotal) + '.' + formatMilliseconds(remainingTotal);
+        li.className = `flex justify-between items-center p-1.5 border-b border-gray-100 last:border-0 ${textColorClass}`;
+        
+        // 格式化时间显示，弱化毫秒部分
+        const durationStr = formatTime(lap.duration);
+        const durationMs = formatMilliseconds(lap.duration);
+        
+        // 对于考试模式超时后的分段，显示超时后的累计时间
+        let totalStr, totalMs;
+        if (state.currentMode === 'exam' && lap.isOverTime && mode.overtimeLaps.length > 0) {
+          // 找到对应的超时后分段记录
+          const overtimeLap = mode.overtimeLaps.find(ol => ol.startTime === lap.startTime);
+          if (overtimeLap) {
+            totalStr = formatTime(overtimeLap.overtimeTotal);
+            totalMs = formatMilliseconds(overtimeLap.overtimeTotal);
+          } else {
+            totalStr = formatTime(lap.total - mode.duration);
+            totalMs = formatMilliseconds(lap.total - mode.duration);
+          }
+        } else if (state.currentMode === 'timer' && lap.isOverTime) {
+          // 倒计时模式超时后显示超时时间
+          totalStr = formatTime(lap.total - mode.targetTime);
+          totalMs = formatMilliseconds(lap.total - mode.targetTime);
         } else {
-          durationStr = formatTime(lap.duration) + '.' + formatMilliseconds(lap.duration);
-          totalStr = formatTime(lap.total) + '.' + formatMilliseconds(lap.total);
+          totalStr = formatTime(lap.total);
+          totalMs = formatMilliseconds(lap.total);
         }
         
         li.innerHTML = `
-          <span class="text-gray-500 text-xs ${lap.isOverTime ? 'text-danger' : ''}">${lap.typeText}</span>
-          <span class="text-gray-700 text-sm ${lap.isOverTime ? 'text-danger' : ''}">${durationStr}</span>
-          <span class="${lap.index === state.laps.length ? 'text-primary font-medium' : 'text-gray-600'} text-sm ${lap.isOverTime ? 'text-danger' : ''}">${totalStr}</span>
+          <span class="text-xs ${textColorClass} w-16 text-left">${lap.typeText}</span>
+          <span class="text-sm ${textColorClass}">
+            ${durationStr}<span class="text-xs text-gray-400 ml-0.5">.${durationMs}</span>
+          </span>
+          <span class="text-sm ${textColorClass}">
+            ${totalStr}<span class="text-xs text-gray-400 ml-0.5">.${totalMs}</span>
+          </span>
         `;
         elements.lapsList.appendChild(li);
       });
       
-      elements.lapsList.scrollTop = elements.lapsList.scrollHeight;
+      // 滚动到顶部，显示最新的记录
+      elements.lapsList.scrollTop = 0;
     }
     
     // 设置倒计时目标时间
     function setTargetTime() {
+      const mode = state.modes.timer;
       const hours = parseInt(elements.hoursInput.value) || 0;
       const minutes = parseInt(elements.minutesInput.value) || 0;
       const seconds = parseInt(elements.secondsInput.value) || 0;
       
-      state.targetTime = (hours * 3600 + minutes * 60 + seconds) * 1000;
-      return state.targetTime > 0;
+      mode.targetTime = (hours * 3600 + minutes * 60 + seconds) * 1000;
+      
+      // 修复：设置目标时间后立即更新显示
+      if (state.currentMode === 'timer' && !mode.running) {
+        mode.elapsedTime = 0; // 重置已用时间
+        updateTimeDisplay(); // 更新显示
+      }
+      
+      return mode.targetTime > 0;
     }
     
     // 设置考试时长
     function setExamDuration(hours, minutes, seconds) {
-      state.examDuration = (hours * 3600 + minutes * 60 + seconds) * 1000;
+      const mode = state.modes.exam;
+      mode.duration = (hours * 3600 + minutes * 60 + seconds) * 1000;
       elements.examHoursInput.value = hours;
       elements.examMinutesInput.value = minutes;
       elements.examSecondsInput.value = seconds;
     }
     
-    // 切换模式
-    function switchMode(mode) {
-      if (state.mode === mode) return;
+    // 切换模式（保持计时连续性）
+    function switchMode(newMode) {
+      if (state.currentMode === newMode) return;
       
-      pauseTimer();
-      state.lastAlertTime = -1;
-      state.elapsedTime = 0;
-      state.laps = [];
-      state.examTimeOver = false;
-      state.alertPlaying = false;
+      state.currentMode = newMode;
       
-      state.mode = mode;
-      updateLapsList();
-      
+      // 更新UI显示
       elements.stopwatchModeBtn.classList.remove('mode-active', 'mode-inactive');
       elements.timerModeBtn.classList.remove('mode-active', 'mode-inactive');
       elements.examModeBtn.classList.remove('mode-active', 'mode-inactive');
@@ -532,39 +895,54 @@
       elements.timerSetting.classList.add('hidden');
       elements.examSetting.classList.add('hidden');
       
-      elements.stopwatchInfo.classList.add('hidden');
-      elements.timerInfo.classList.add('hidden');
-      elements.examInfo.classList.add('hidden');
-      
-      switch(mode) {
+      // 激活新模式UI
+      const newModeState = state.modes[newMode];
+      switch(newMode) {
         case 'stopwatch':
           elements.stopwatchModeBtn.classList.add('mode-active');
           elements.timerModeBtn.classList.add('mode-inactive');
           elements.examModeBtn.classList.add('mode-inactive');
-          elements.stopwatchInfo.classList.remove('hidden');
           break;
         case 'timer':
           elements.stopwatchModeBtn.classList.add('mode-inactive');
           elements.timerModeBtn.classList.add('mode-active');
           elements.examModeBtn.classList.add('mode-inactive');
           elements.timerSetting.classList.remove('hidden');
-          elements.timerInfo.classList.remove('hidden');
-          state.targetTime = 0;
-          elements.hoursInput.value = 0;
-          elements.minutesInput.value = 0;
-          elements.secondsInput.value = 10;
+          // 恢复倒计时输入框值
+          const hours = Math.floor(newModeState.targetTime / (3600 * 1000)) || 0;
+          const minutes = Math.floor((newModeState.targetTime % (3600 * 1000)) / (60 * 1000)) || 0;
+          const seconds = Math.floor((newModeState.targetTime % (60 * 1000)) / 1000) || 0;
+          elements.hoursInput.value = hours;
+          elements.minutesInput.value = minutes;
+          elements.secondsInput.value = seconds;
           break;
         case 'exam':
           elements.stopwatchModeBtn.classList.add('mode-inactive');
           elements.timerModeBtn.classList.add('mode-inactive');
           elements.examModeBtn.classList.add('mode-active');
           elements.examSetting.classList.remove('hidden');
-          elements.examInfo.classList.remove('hidden');
-          setExamDuration(2, 0, 0);
+          // 恢复考试时长输入框值
+          const examHours = Math.floor(newModeState.duration / (3600 * 1000)) || 0;
+          const examMinutes = Math.floor((newModeState.duration % (3600 * 1000)) / (60 * 1000)) || 0;
+          const examSeconds = Math.floor((newModeState.duration % (60 * 1000)) / 1000) || 0;
+          elements.examHoursInput.value = examHours;
+          elements.examMinutesInput.value = examMinutes;
+          elements.examSecondsInput.value = examSeconds;
           break;
       }
       
+      // 更新控制按钮状态
+      if (newModeState.running) {
+        elements.startBtn.classList.add('hidden');
+        elements.pauseBtn.classList.remove('hidden');
+      } else {
+        elements.pauseBtn.classList.add('hidden');
+        elements.startBtn.classList.remove('hidden');
+      }
+      
+      // 更新时间显示和记录列表
       updateTimeDisplay();
+      updateLapsList();
     }
     
     // 事件监听
@@ -578,19 +956,19 @@
     elements.examModeBtn.addEventListener('click', () => switchMode('exam'));
     
     elements.exam2hBtn.addEventListener('click', () => {
-      if (state.mode === 'exam' && !state.running) {
+      if (state.currentMode === 'exam') {
         setExamDuration(2, 0, 0);
       }
     });
     
     elements.exam2h30mBtn.addEventListener('click', () => {
-      if (state.mode === 'exam' && !state.running) {
+      if (state.currentMode === 'exam') {
         setExamDuration(2, 30, 0);
       }
     });
     
     function updateExamDurationOnInput() {
-      if (state.mode === 'exam' && !state.running) {
+      if (state.currentMode === 'exam' && !state.modes.exam.running) {
         const hours = parseInt(elements.examHoursInput.value) || 0;
         const minutes = parseInt(elements.examMinutesInput.value) || 0;
         const seconds = parseInt(elements.examSecondsInput.value) || 0;
@@ -602,25 +980,37 @@
     elements.examMinutesInput.addEventListener('input', updateExamDurationOnInput);
     elements.examSecondsInput.addEventListener('input', updateExamDurationOnInput);
     
-    elements.hoursInput.addEventListener('input', () => {
-      if (state.mode === 'timer' && !state.running) {
+    // 修复：倒计时模式下修改目标时间时立即更新显示
+    function updateTimerOnInput() {
+      if (state.currentMode === 'timer' && !state.modes.timer.running) {
         setTargetTime();
       }
+    }
+    
+    elements.hoursInput.addEventListener('input', updateTimerOnInput);
+    elements.minutesInput.addEventListener('input', updateTimerOnInput);
+    elements.secondsInput.addEventListener('input', updateTimerOnInput);
+    
+    // 添加输入验证和限制
+    function validateInput(input, min, max) {
+      let value = parseInt(input.value) || min;
+      if (value < min) value = min;
+      if (value > max) value = max;
+      input.value = value;
+    }
+    
+    // 为所有输入框添加验证
+    [elements.hoursInput, elements.minutesInput, elements.secondsInput, 
+     elements.examHoursInput, elements.examMinutesInput, elements.examSecondsInput].forEach(input => {
+      input.addEventListener('blur', () => {
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        validateInput(input, min, max);
+      });
     });
     
-    elements.minutesInput.addEventListener('input', () => {
-      if (state.mode === 'timer' && !state.running) {
-        setTargetTime();
-      }
-    });
-    
-    elements.secondsInput.addEventListener('input', () => {
-      if (state.mode === 'timer' && !state.running) {
-        setTargetTime();
-      }
-    });
-    
-    // 初始化
+    // 初始化 - 设置倒计时初始目标时间
+    setTargetTime();
     updateTimeDisplay();
     updateLapsList();
   </script>
